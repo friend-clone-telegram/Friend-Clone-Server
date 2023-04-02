@@ -1,0 +1,3 @@
+interface EnvironmentVariables {
+  PORT: number;
+}
