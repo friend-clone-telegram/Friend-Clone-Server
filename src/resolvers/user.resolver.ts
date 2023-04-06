@@ -1,71 +1,35 @@
-import { Args, Field, Int, Mutation, ObjectType, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Field, Int, Mutation, ObjectType, Query, Resolver } from '@nestjs/graphql';
+import { CreateUserInputData, UpdateUserInputData } from 'dtos/user.dtos';
+import { UserService } from 'services/user.service';
 
 @ObjectType()
-export class Author {
-  @Field((type) => Int)
-  id: number;
-
-  @Field({ nullable: true })
-  firstName?: string;
-
-  @Field({ nullable: true })
-  lastName?: string;
-
-  @Field((type) => [Post])
-  posts: Post[];
-}
-
-@ObjectType()
-export class Post {
-  @Field((type) => Int)
+export class User {
+  @Field(() => Int)
   id: number;
 
   @Field()
-  title: string;
+  username: string;
 
-  @Field((type) => Int, { nullable: true })
-  votes?: number;
+  @Field()
+  email: string;
 }
 
-@Resolver((of) => Author)
-export class AuthorsResolver {
-  constructor() {}
+@Resolver(() => User)
+export class UserResolver {
+  constructor(private userService: UserService) {}
 
-  @Query((returns) => Author)
-  async author(@Args('id', { type: () => Int }) id: number) {
-    return authors.find((author) => author.id === id);
+  @Query(() => User)
+  async user(@Args('id', { type: () => Int }) id: number) {
+    return this.userService.findOne(id);
   }
 
-  @ResolveField()
-  async posts(@Parent() author: Author) {
-    const { id } = author;
-    return authors.find((author) => author.id === id).posts;
+  @Mutation(() => User)
+  async createUser(@Args('createUserData') createUserInputData: CreateUserInputData) {
+    return this.userService.create(createUserInputData);
   }
 
-  @Mutation((returns) => Post)
-  async upvotePost(@Args({ name: 'postId', type: () => Int }) postId: number) {
-    let foundPost: Post;
-    posts = posts.map((post) => {
-      if (post.id === postId) {
-        post.votes += 1;
-        foundPost = post;
-      }
-      return post;
-    });
-
-    return foundPost;
+  @Mutation(() => User)
+  async updateUser(@Args('id') id: number, @Args('updateUserData') updateUserInputData: UpdateUserInputData) {
+    return this.userService.update(id, updateUserInputData);
   }
 }
-
-let posts: Array<Post> = Array.from({ length: 10 }, (_, i) => ({
-  id: i,
-  title: `Post #${i}`,
-  votes: i * 10
-}));
-
-const authors: Array<Author> = Array.from({ length: 10 }, (_, i) => ({
-  id: i,
-  firstName: `Author #${i}`,
-  lastName: `Last Name #${i}`,
-  posts: posts.filter((post) => post.id % 2 === 0)
-}));
