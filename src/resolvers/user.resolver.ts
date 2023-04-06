@@ -32,4 +32,9 @@ export class UserResolver {
   async updateUser(@Args('id') id: number, @Args('updateUserData') updateUserInputData: UpdateUserInputData) {
     return this.userService.update(id, updateUserInputData);
   }
+
+  @Mutation(() => User)
+  async deleteUser(@Args('id') id: number) {
+    return this.userService.delete(id);
+  }
 }
