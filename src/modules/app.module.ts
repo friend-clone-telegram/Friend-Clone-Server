@@ -6,7 +6,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { join } from 'path';
 
-import { UsersModule } from './users.module';
+import { UsersModule } from 'modules/users.module';
+
+import { AppController } from 'controllers/app.controller';
+
 import { User } from 'entities/user.entity';
 
 @Module({
@@ -15,11 +18,12 @@ import { User } from 'entities/user.entity';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService<EnvironmentVariables>) => ({
         type: 'postgres',
-        host: configService.get('DB_HOST'),
-        port: +configService.get<number>('DB_PORT'),
-        username: configService.get('DB_USERNAME'),
-        password: configService.get('DB_PASSWORD'),
-        database: configService.get('DB_NAME'),
+        url: configService.get('DATABASE_URL'),
+        // host: configService.get('DB_HOST'),
+        // port: +configService.get<number>('DB_PORT'),
+        // username: configService.get('DB_USERNAME'),
+        // password: configService.get('DB_PASSWORD'),
+        // database: configService.get('DB_NAME'),
         entities: [User],
         synchronize: true
       }),
@@ -33,6 +37,7 @@ import { User } from 'entities/user.entity';
       isGlobal: true
     }),
     UsersModule
-  ]
+  ],
+  controllers: [AppController]
 })
 export class AppModule {}

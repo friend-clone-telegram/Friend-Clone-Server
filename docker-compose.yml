@@ -1,17 +1,38 @@
 version: '3.9'
 services:
-  db:
-    image: postgres
+  app:
+    build: .
     restart: always
     environment:
+      DATABASE_URL: postgresql://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/${DB_NAME}?schema=public
       POSTGRES_HOST: ${DB_HOST}
       POSTGRES_PORT: ${DB_PORT}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
+      PORT: ${PORT}
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - postgres
+    healthcheck:
+      test: ['curl', '-f', 'http://app:${PORT}/']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - '5432:5432'
     volumes:
       - db-data:/var/lib/postgresql/data
-    ports:
-      - ${DB_PORT}:${DB_PORT}
+
 volumes:
   db-data:
